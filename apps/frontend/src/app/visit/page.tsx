@@ -1,7 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { MapPin, Phone, Mail, Clock, Car, Navigation, ShieldCheck, Calendar } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { BRAND } from '@barber/shared';
 
 export const metadata: Metadata = {
@@ -23,144 +24,94 @@ export default function VisitPage() {
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
     `${BRAND.name}, ${BRAND.location.address}, ${BRAND.location.city}`
   )}`;
+  const tel = BRAND.location.phone.replace(/\s/g, '');
 
   return (
-    <div className="bg-brand-cream text-brand-dark pt-36 pb-28 px-6 md:px-12 lg:px-16">
-      <div className="max-w-6xl mx-auto space-y-20">
-        {/* Editorial Header */}
-        <header className="max-w-3xl space-y-4">
-          <span className="text-brand-coral micro-label block">
-            Studio Location & Concierge
-          </span>
-          <h1 className="text-display-l font-normal text-brand-navy">
-            Visit our Harare studio.
-          </h1>
-          <p className="text-base sm:text-lg text-brand-dark/75 font-light font-sans leading-relaxed max-w-prose">
-            Conveniently situated in the quiet, leafy heart of Avondale with secure gated parking and a dedicated guest espresso bar.
-          </p>
-        </header>
+    <>
+      <PageHeader
+        title="Visit the studio."
+        lede="On a quiet street in Avondale, two minutes from the shopping centre, with parking at the gate."
+      />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 font-sans">
-          {/* Details Column (7 cols) */}
-          <div className="lg:col-span-7 space-y-8">
-            <div className="bg-white rounded-lg p-8 sm:p-10 border border-brand-navy/15 space-y-8">
-              <div>
-                <h2 className="text-xs uppercase tracking-[0.18em] font-semibold text-brand-coral mb-3 flex items-center space-x-2">
-                  <MapPin className="w-4 h-4 text-brand-coral" />
-                  <span>Address & Studio</span>
-                </h2>
-                <p className="font-display text-2xl text-brand-navy font-normal">
-                  {BRAND.location.address}
-                </p>
-                <p className="text-sm text-brand-dark/70 font-light mt-1">
-                  {BRAND.location.city}, {BRAND.location.country}
-                </p>
-                <div className="pt-3">
-                  <a
-                    href={googleMapsUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center space-x-1.5 text-xs uppercase tracking-wider font-semibold text-brand-navy hover:text-brand-coral transition-colors"
-                  >
-                    <Navigation className="w-3.5 h-3.5" />
-                    <span>Open in Google Maps →</span>
-                  </a>
-                </div>
-              </div>
-
-              <div className="border-t border-brand-navy/10 pt-6">
-                <h3 className="text-xs uppercase tracking-[0.18em] font-semibold text-brand-coral mb-3 flex items-center space-x-2">
-                  <Clock className="w-4 h-4 text-brand-coral" />
-                  <span>Studio Hours</span>
-                </h3>
-                <ul className="space-y-2 text-sm text-brand-dark/80">
-                  {BRAND.hours.map((h, i) => (
-                    <li key={i} className="flex justify-between border-b border-brand-navy/5 pb-2">
-                      <span className="text-brand-dark/60 font-light">{h.day}</span>
-                      <span className="font-medium text-brand-navy">{h.time}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="border-t border-brand-navy/10 pt-6 space-y-3">
-                <h3 className="text-xs uppercase tracking-[0.18em] font-semibold text-brand-coral mb-2">
-                  Contact & Concierge Desk
-                </h3>
-                <div className="text-sm text-brand-dark/80 space-y-2 font-light">
-                  <p className="flex items-center space-x-2">
-                    <Phone className="w-4 h-4 text-brand-coral" />
-                    <a href={`tel:${BRAND.location.phone}`} className="hover:text-brand-coral transition-colors font-medium text-brand-navy">
-                      {BRAND.location.phone}
-                    </a>
-                  </p>
-                  <p className="flex items-center space-x-2">
-                    <Mail className="w-4 h-4 text-brand-coral" />
-                    <a href={`mailto:${BRAND.location.email}`} className="hover:text-brand-coral transition-colors font-medium text-brand-navy">
-                      {BRAND.location.email}
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Parking & Accessibility Notice */}
-            <div className="p-6 rounded-lg bg-brand-navy/5 border border-brand-navy/15 flex items-start space-x-4">
-              <Car className="w-5 h-5 text-brand-coral flex-shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-sm text-brand-navy">Complimentary Private Parking</h4>
-                <p className="text-xs text-brand-dark/70 mt-1 leading-relaxed font-light">
-                  Gated private parking with dedicated security on-site directly outside the studio entrance on Bath Road.
-                </p>
-              </div>
-            </div>
+      <div className="shell section pt-16 md:pt-20 grid gap-4 md:grid-cols-6">
+        <a
+          href={googleMapsUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="group tile-dark p-8 md:p-10 md:col-span-4 min-h-[320px] md:min-h-[420px] flex flex-col justify-between"
+        >
+          <p className="t-caption text-white/55">Address</p>
+          <div>
+            <p className="t-title">{BRAND.location.address}</p>
+            <p className="t-lede text-white/60 mt-2">
+              {BRAND.location.city}, {BRAND.location.country}
+            </p>
+            <span className="link-more t-lede text-ember mt-6 group-hover:underline">
+              Get directions
+              <ChevronRight className="w-[1em] h-[1em]" strokeWidth={2} />
+            </span>
           </div>
+        </a>
 
-          {/* Policy & Booking Column (5 cols) */}
-          <div className="lg:col-span-5 space-y-8">
-            <div className="bg-brand-deep rounded-lg p-8 sm:p-10 border border-brand-light/15 text-brand-light space-y-6">
-              <span className="text-xs uppercase tracking-[0.18em] text-brand-coral font-semibold block">
-                Appointment Protocol
-              </span>
-              <h2 className="font-display text-3xl font-normal leading-tight">
-                Strictly reserved chairs.
-              </h2>
-              <p className="text-xs sm:text-sm text-brand-light/75 font-light leading-relaxed">
-                To preserve our unrushed lounge atmosphere and ensure every gentleman receives complete dedicated focus, we operate exclusively on scheduled reservations.
-              </p>
+        <div className="tile p-8 md:col-span-2 flex flex-col justify-between gap-10">
+          <p className="t-caption text-ink-2">Talk to us</p>
+          <div className="space-y-4">
+            <a href={`tel:${tel}`} className="block t-subhead font-semibold text-ink hover:underline underline-offset-4 tabular">
+              {BRAND.location.phone}
+            </a>
+            <a href={`mailto:${BRAND.location.email}`} className="block t-caption text-ink-2 hover:text-ink hover:underline underline-offset-4 break-all">
+              {BRAND.location.email}
+            </a>
+          </div>
+        </div>
 
-              <div className="space-y-3 border-t border-brand-light/10 pt-6 text-xs text-brand-light/80">
-                <div className="flex items-center space-x-2">
-                  <ShieldCheck className="w-4 h-4 text-brand-coral flex-shrink-0" />
-                  <span>Reschedule or cancel freely up to 2 hours prior</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <ShieldCheck className="w-4 h-4 text-brand-coral flex-shrink-0" />
-                  <span>Real-time availability calendar synchronization</span>
-                </div>
+        <div className="tile p-8 md:p-10 md:col-span-3">
+          <h2 className="t-headline text-ink">Hours</h2>
+          <dl className="mt-6 divide-y divide-hairline">
+            {BRAND.hours.map(h => (
+              <div key={h.day} className="flex items-baseline justify-between gap-6 py-3.5">
+                <dt className="text-ink">{h.day}</dt>
+                <dd className="text-ink-2 tabular text-right">{h.time.replace(' (By Special Request Only)', '')}</dd>
               </div>
+            ))}
+          </dl>
+          <p className="t-caption text-ink-2 mt-5">Sundays are available for groups by request.</p>
+        </div>
 
-              <div className="pt-2">
-                <Link
-                  href="/book"
-                  className="w-full btn-primary py-4 text-center text-xs uppercase tracking-wider font-semibold block flex items-center justify-center space-x-2"
-                >
-                  <Calendar className="w-4 h-4" />
-                  <span>Reserve Your Chair</span>
-                </Link>
-              </div>
-            </div>
+        <div className="tile p-8 md:p-10 md:col-span-3 flex flex-col justify-between gap-8">
+          <div>
+            <h2 className="t-headline text-ink">Appointments only</h2>
+            <p className="t-caption text-ink-2 mt-3 max-w-[40ch]">
+              We don’t take walk-ins, so the chair is ready when you arrive. You can move or cancel
+              a booking online up to two hours before it starts.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <Link href="/book" className="btn btn-ink">
+              Book a chair
+            </Link>
+            <Link href="/manage" className="link-more t-caption text-ink">
+              Change a booking
+              <ChevronRight className="w-[1em] h-[1em]" strokeWidth={2} />
+            </Link>
+          </div>
+        </div>
 
-            {/* Landmarks guide */}
-            <div className="bg-white rounded-lg p-8 border border-brand-navy/15 space-y-2">
-              <h3 className="font-display text-xl text-brand-navy font-normal">Harare Connections</h3>
-              <p className="text-xs text-brand-dark/70 leading-relaxed font-light">
-                Located 2 minutes from Avondale Shopping Centre, easily accessible via King George Road / Bath Road with quick connections from Borrowdale, Belgravia, and the Harare CBD.
-              </p>
-            </div>
+        <div className="tile p-8 md:p-10 md:col-span-6 grid gap-6 md:grid-cols-2 md:gap-16">
+          <div>
+            <h2 className="t-subhead font-semibold text-ink">Parking</h2>
+            <p className="t-caption text-ink-2 mt-2 max-w-[44ch]">
+              Free gated parking with a guard on duty, directly outside the studio entrance on Bath Road.
+            </p>
+          </div>
+          <div>
+            <h2 className="t-subhead font-semibold text-ink">Getting here</h2>
+            <p className="t-caption text-ink-2 mt-2 max-w-[44ch]">
+              Take King George Road to Bath Road. About ten minutes from the CBD, Borrowdale or Belgravia outside rush hour.
+            </p>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

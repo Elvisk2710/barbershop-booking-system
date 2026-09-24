@@ -1,36 +1,45 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Calendar } from 'lucide-react';
 
+/**
+ * A slim frosted bar that rises into view on phones once the reader has
+ * scrolled past the first screen, so the booking action is always a thumb away.
+ */
 export function StickyMobileCTA() {
   const pathname = usePathname();
+  const [visible, setVisible] = useState(false);
 
-  // Hide on booking, management, and legal pages
-  const isExcluded =
-    pathname.startsWith('/book') ||
-    pathname.startsWith('/manage') ||
-    pathname.startsWith('/terms') ||
-    pathname.startsWith('/privacy');
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > window.innerHeight * 0.6);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [pathname]);
 
-  if (isExcluded) {
-    return null;
-  }
+  const excluded = ['/book', '/booking', '/manage', '/terms', '/privacy'].some(p =>
+    pathname.startsWith(p)
+  );
+  if (excluded) return null;
 
   return (
-    <div className="md:hidden fixed bottom-4 left-4 right-4 z-40">
-      <Link
-        href="/book"
-        className="w-full btn-primary py-3.5 px-5 flex items-center justify-between font-sans font-medium tracking-wider uppercase text-xs border border-brand-coral/40"
-      >
-        <div className="flex items-center space-x-2">
-          <Calendar className="w-4 h-4" />
-          <span>Reserve a Chair</span>
+    <div
+      className={`md:hidden fixed inset-x-3 bottom-3 z-40 transition-[transform,opacity] duration-500 ease-out ${
+        visible ? 'translate-y-0 opacity-100' : 'translate-y-[calc(100%+1rem)] opacity-0'
+      }`}
+      aria-hidden={!visible}
+    >
+      <div className="material rounded-[22px] shadow-[0_8px_32px_rgba(0,0,0,0.12)] pl-5 pr-2 py-2 flex items-center justify-between">
+        <div className="leading-tight">
+          <p className="t-caption font-semibold text-ink">Cuts from $10</p>
+          <p className="t-fine text-ink-2">Open Mon–Sat in Avondale</p>
         </div>
-        <span className="text-brand-dark/80 font-semibold">From $10 →</span>
-      </Link>
+        <Link href="/book" tabIndex={visible ? 0 : -1} className="btn btn-ink btn-sm min-h-[40px] px-5">
+          Book
+        </Link>
+      </div>
     </div>
   );
 }

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { Search, Calendar, Clock, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { ApiClient } from '@/lib/api';
 import { Booking } from '@barber/shared';
 
@@ -41,7 +41,7 @@ function ManageBookingContent() {
       const data = await ApiClient.getBooking(reference.trim(), email.trim() || undefined);
       setBooking(data);
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Appointment not found. Please check your reference code.' });
+      setMessage({ type: 'error', text: err.message || 'No booking matches that reference. Check the code in your confirmation email.' });
       setBooking(null);
     } finally {
       setLoading(false);
@@ -50,7 +50,7 @@ function ManageBookingContent() {
 
   const handleReschedule = async () => {
     if (!booking || !newDate || !newTime) {
-      setMessage({ type: 'error', text: 'Please select a new date and time.' });
+      setMessage({ type: 'error', text: 'Pick a new day and time first.' });
       return;
     }
     setActionLoading(true);
@@ -62,9 +62,9 @@ function ManageBookingContent() {
       });
       setBooking(updated);
       setIsRescheduling(false);
-      setMessage({ type: 'success', text: 'Appointment rescheduled successfully!' });
+      setMessage({ type: 'success', text: 'Booking moved. We’ve emailed you the new time.' });
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Failed to reschedule. Time slot may be unavailable.' });
+      setMessage({ type: 'error', text: err.message || 'That time isn’t free. Try another time.' });
     } finally {
       setActionLoading(false);
     }
@@ -72,7 +72,7 @@ function ManageBookingContent() {
 
   const handleCancel = async () => {
     if (!booking) return;
-    if (!window.confirm('Are you sure you want to cancel this appointment reservation?')) {
+    if (!window.confirm('Cancel this booking? The time will be released to other guests.')) {
       return;
     }
     setActionLoading(true);
@@ -80,224 +80,205 @@ function ManageBookingContent() {
     try {
       const updated = await ApiClient.cancelBooking(booking.reference);
       setBooking(updated);
-      setMessage({ type: 'success', text: 'Your appointment has been cancelled.' });
+      setMessage({ type: 'success', text: 'Booking cancelled.' });
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Failed to cancel appointment.' });
+      setMessage({ type: 'error', text: err.message || 'We couldn’t cancel the booking. Call the studio and we’ll sort it out.' });
     } finally {
       setActionLoading(false);
     }
   };
 
+  const TIMES = ['09:00', '09:45', '10:30', '11:15', '14:00', '14:45', '15:30', '16:15'];
+  const cancelled = booking?.status === 'CANCELLED';
+
   return (
-    <div className="bg-brand-cream min-h-screen text-brand-dark pt-36 pb-28 px-4 sm:px-6 md:px-12 font-sans">
-      <div className="max-w-2xl mx-auto space-y-8">
-        <header className="text-center space-y-3">
-          <span className="text-brand-coral micro-label block">
-            Client Concierge Portal
-          </span>
-          <h1 className="text-display-l font-normal text-brand-navy">
-            Manage your booking.
-          </h1>
-          <p className="text-sm text-brand-dark/70 font-light">
-            Look up your appointment reference to reschedule, verify details, or cancel.
-          </p>
-        </header>
+    <div className="shell max-w-[640px] pt-[calc(var(--nav-h)+clamp(3rem,8vw,6rem))] pb-[clamp(5rem,10vw,8rem)]">
+      <header className="text-center">
+        <h1 className="t-display text-ink">Your booking.</h1>
+        <p className="t-lede text-ink-2 mt-4 mx-auto max-w-[34ch]">
+          Enter the reference from your confirmation to move or cancel it.
+        </p>
+      </header>
 
-        {/* Lookup Card (Crisp 8px Radius, Hairline Border) */}
-        <div className="bg-white rounded-lg p-6 sm:p-8 border border-brand-navy/15">
-          <form onSubmit={handleLookup} className="space-y-4">
-            <div>
-              <label className="text-xs uppercase tracking-wider font-semibold text-brand-dark/70 block mb-1.5 font-sans">
-                Booking Reference *
-              </label>
-              <input
-                type="text"
-                required
-                value={reference}
-                onChange={e => setReference(e.target.value.toUpperCase())}
-                placeholder="e.g. GRM-2041"
-                className="w-full px-4 py-3 rounded-[6px] border border-brand-navy/20 focus:border-brand-coral outline-none text-sm uppercase font-mono bg-white"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs uppercase tracking-wider font-semibold text-brand-dark/70 block mb-1.5 font-sans">
-                Email Address (Optional)
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="e.g. tendai@example.com"
-                className="w-full px-4 py-3 rounded-[6px] border border-brand-navy/20 focus:border-brand-coral outline-none text-sm bg-white"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || !reference.trim()}
-              className="w-full btn-primary py-3.5 text-xs uppercase tracking-wider font-semibold flex items-center justify-center space-x-2"
-            >
-              {loading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-brand-deep border-t-transparent" />
-              ) : (
-                <>
-                  <Search className="w-4 h-4" />
-                  <span>Find Appointment</span>
-                </>
-              )}
-            </button>
-          </form>
+      <form onSubmit={handleLookup} className="mt-10 grid gap-3">
+        <div className="field">
+          <input
+            id="reference"
+            type="text"
+            required
+            value={reference}
+            onChange={e => setReference(e.target.value.toUpperCase())}
+            placeholder=" "
+            autoComplete="off"
+            className="field-input uppercase tracking-[0.04em]"
+          />
+          <label htmlFor="reference" className="field-label">
+            Booking reference
+          </label>
         </div>
+        <div className="field">
+          <input
+            id="lookup-email"
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder=" "
+            autoComplete="email"
+            className="field-input"
+          />
+          <label htmlFor="lookup-email" className="field-label">
+            Email (optional)
+          </label>
+        </div>
+        <button type="submit" disabled={loading || !reference.trim()} className="btn btn-ink btn-lg mt-2">
+          {loading ? <span className="spinner w-4 h-4" aria-label="Searching" /> : 'Find booking'}
+        </button>
+      </form>
 
-        {/* Feedback Messages */}
+      <AnimatePresence>
         {message && (
-          <div
-            className={`p-4 rounded-[6px] text-xs flex items-center space-x-2.5 font-sans ${
-              message.type === 'success'
-                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                : 'bg-red-50 text-red-800 border border-red-200'
+          <motion.div
+            key={message.text}
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            role="status"
+            className={`mt-6 rounded-[14px] p-4 t-caption flex items-start gap-2.5 ${
+              message.type === 'success' ? 'bg-[#eef8f1] text-[#1d6b3d]' : 'bg-[#fff2f0] text-[#9f2a19]'
             }`}
           >
             {message.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+              <CheckCircle2 className="w-[18px] h-[18px] shrink-0 mt-px" />
             ) : (
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <AlertCircle className="w-[18px] h-[18px] shrink-0 mt-px" />
             )}
             <span>{message.text}</span>
-          </div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        {/* Found Booking Card */}
+      <AnimatePresence>
         {booking && (
-          <div className="bg-brand-deep text-brand-light rounded-lg p-6 sm:p-8 border border-brand-coral/30 space-y-6 animate-fade-in font-sans">
-            <div className="flex justify-between items-start border-b border-brand-light/10 pb-4">
-              <div>
-                <span className="text-xs font-mono text-brand-coral tracking-widest block mb-1">
-                  REF: {booking.reference}
-                </span>
-                <h3 className="font-display text-2xl text-brand-light font-normal">
-                  {booking.service?.name || 'Grooming Service'}
-                </h3>
-              </div>
-              <div
-                className={`px-3 py-1 rounded-[4px] text-xs font-semibold uppercase tracking-wider ${
-                  booking.status === 'CANCELLED'
-                    ? 'bg-red-900/60 text-red-300 border border-red-700'
-                    : 'bg-brand-navy text-brand-coral border border-brand-coral/40'
-                }`}
-              >
-                {booking.status}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 text-xs text-brand-light/80">
-              <div>
-                <span className="text-brand-light/50 block">Barber</span>
-                <span className="font-medium text-brand-light">{booking.barber?.name || 'Assigned Barber'}</span>
-              </div>
-              <div>
-                <span className="text-brand-light/50 block">Client</span>
-                <span className="font-medium text-brand-light">{booking.customerName}</span>
-              </div>
-              <div>
-                <span className="text-brand-light/50 block">Date</span>
-                <span className="font-medium text-brand-light">{booking.date}</span>
-              </div>
-              <div>
-                <span className="text-brand-light/50 block">Time</span>
-                <span className="font-medium text-brand-coral font-mono">
-                  {booking.startTime} – {booking.endTime}
+          <motion.section
+            key={booking.reference}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="tile mt-10"
+            aria-label="Booking details"
+          >
+            <div className="p-7 md:p-8">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="t-caption text-ink-2 tabular">{booking.reference}</p>
+                  <h2 className={`t-headline mt-1 ${cancelled ? 'text-ink-3 line-through' : 'text-ink'}`}>
+                    {booking.service?.name || 'Appointment'}
+                  </h2>
+                </div>
+                <span
+                  className={`t-fine font-semibold rounded-full px-3 py-1.5 ${
+                    cancelled ? 'bg-[#fff2f0] text-[#9f2a19]' : 'bg-white text-ink'
+                  }`}
+                >
+                  {cancelled ? 'Cancelled' : 'Confirmed'}
                 </span>
               </div>
-            </div>
 
-            {/* Reschedule Form Toggle */}
-            {isRescheduling && (
-              <div className="p-4 rounded-[6px] bg-brand-navy border border-brand-light/10 space-y-4 text-xs">
-                <h4 className="font-semibold text-brand-light uppercase tracking-wider">
-                  Select New Date & Time
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-brand-light/70 block mb-1">Date</label>
-                    <input
-                      type="date"
-                      value={newDate}
-                      onChange={e => setNewDate(e.target.value)}
-                      className="w-full px-3 py-2 rounded-[4px] bg-brand-deep border border-brand-light/20 text-brand-light outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-brand-light/70 block mb-1">Time</label>
-                    <select
-                      value={newTime}
-                      onChange={e => setNewTime(e.target.value)}
-                      className="w-full px-3 py-2 rounded-[4px] bg-brand-deep border border-brand-light/20 text-brand-light outline-none"
-                    >
-                      <option value="09:00">09:00</option>
-                      <option value="09:45">09:45</option>
-                      <option value="10:30">10:30</option>
-                      <option value="11:15">11:15</option>
-                      <option value="14:00">14:00</option>
-                      <option value="14:45">14:45</option>
-                      <option value="15:30">15:30</option>
-                      <option value="16:15">16:15</option>
-                    </select>
-                  </div>
+              <dl className="mt-7 grid grid-cols-2 gap-x-6 gap-y-5 pt-6 border-t border-hairline t-caption">
+                <div>
+                  <dt className="text-ink-2">Day</dt>
+                  <dd className="text-ink font-medium mt-0.5">
+                    {new Date(`${booking.date}T00:00:00`).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  </dd>
                 </div>
-
-                <div className="flex space-x-3 pt-2">
-                  <button
-                    onClick={handleReschedule}
-                    disabled={actionLoading}
-                    className="btn-primary py-2 px-4 text-xs uppercase tracking-wider font-semibold"
-                  >
-                    {actionLoading ? 'Saving...' : 'Confirm New Time'}
-                  </button>
-                  <button
-                    onClick={() => setIsRescheduling(false)}
-                    className="btn-secondary-dark py-2 px-4 text-xs uppercase tracking-wider font-semibold"
-                  >
-                    Cancel
-                  </button>
+                <div>
+                  <dt className="text-ink-2">Time</dt>
+                  <dd className="text-ink font-medium mt-0.5 tabular">
+                    {booking.startTime} – {booking.endTime}
+                  </dd>
                 </div>
-              </div>
-            )}
+                <div>
+                  <dt className="text-ink-2">Barber</dt>
+                  <dd className="text-ink font-medium mt-0.5">{booking.barber?.name || 'Whoever is free'}</dd>
+                </div>
+                <div>
+                  <dt className="text-ink-2">Name</dt>
+                  <dd className="text-ink font-medium mt-0.5">{booking.customerName}</dd>
+                </div>
+              </dl>
 
-            {/* Action Buttons */}
-            {booking.status !== 'CANCELLED' && (
-              <div className="flex flex-col sm:flex-row gap-3 pt-2 border-t border-brand-light/10">
-                {!isRescheduling && (
-                  <button
-                    onClick={() => setIsRescheduling(true)}
-                    className="btn-primary py-2.5 px-5 text-xs uppercase tracking-wider font-semibold flex items-center justify-center space-x-2"
+              <AnimatePresence initial={false}>
+                {isRescheduling && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    className="overflow-hidden"
                   >
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Reschedule Chair</span>
-                  </button>
+                    <div className="pt-7 mt-7 border-t border-hairline">
+                      <h3 className="t-subhead font-semibold text-ink">Pick a new time</h3>
+                      <div className="field mt-4">
+                        <input
+                          id="new-date"
+                          type="date"
+                          value={newDate}
+                          onChange={e => setNewDate(e.target.value)}
+                          placeholder=" "
+                          className="field-input"
+                        />
+                        <label htmlFor="new-date" className="field-label" style={{ transform: 'translateY(-0.6875rem) scale(0.7)' }}>
+                          Day
+                        </label>
+                      </div>
+                      <div className="mt-4 grid grid-cols-4 gap-2" role="radiogroup" aria-label="Time">
+                        {TIMES.map(t => (
+                          <button
+                            key={t}
+                            type="button"
+                            role="radio"
+                            aria-checked={newTime === t}
+                            onClick={() => setNewTime(t)}
+                            className={`h-11 rounded-full t-caption font-medium tabular transition-colors duration-200 ${
+                              newTime === t ? 'bg-ink text-white' : 'bg-white text-ink shadow-[inset_0_0_0_1px_var(--hairline)] hover:shadow-[inset_0_0_0_1px_var(--ink-3)]'
+                            }`}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="mt-6 flex items-center gap-3">
+                        <button type="button" onClick={handleReschedule} disabled={actionLoading} className="btn btn-ink">
+                          {actionLoading ? 'Moving…' : 'Move booking'}
+                        </button>
+                        <button type="button" onClick={() => setIsRescheduling(false)} className="btn text-ink-2 hover:text-ink px-3">
+                          Keep current time
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
                 )}
+              </AnimatePresence>
+            </div>
 
+            {!cancelled && !isRescheduling && (
+              <div className="border-t border-hairline grid grid-cols-2 divide-x divide-hairline t-caption">
+                <button type="button" onClick={() => setIsRescheduling(true)} className="p-4 text-ink hover:bg-black/[0.03] transition-colors">
+                  Change time
+                </button>
                 <button
+                  type="button"
                   onClick={handleCancel}
                   disabled={actionLoading}
-                  className="px-4 py-2.5 rounded-[6px] border border-red-400/40 text-red-300 hover:bg-red-950/40 text-xs uppercase tracking-wider font-semibold transition-colors flex items-center justify-center space-x-2"
+                  className="p-4 text-[#c4331f] hover:bg-black/[0.03] transition-colors disabled:opacity-40"
                 >
-                  <XCircle className="w-3.5 h-3.5" />
-                  <span>Cancel Appointment</span>
+                  Cancel booking
                 </button>
               </div>
             )}
-          </div>
+          </motion.section>
         )}
-
-        {/* Back Link */}
-        <div className="text-center pt-4">
-          <Link href="/" className="link-editorial text-xs uppercase tracking-widest text-brand-navy font-semibold">
-            ← Return to Gentleman’s Grooming Bar
-          </Link>
-        </div>
-      </div>
+      </AnimatePresence>
     </div>
   );
 }
@@ -306,8 +287,8 @@ export default function ManagePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-brand-cream flex items-center justify-center pt-24 font-sans">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-brand-coral border-t-transparent" />
+        <div className="min-h-[80vh] grid place-items-center text-ink-3">
+          <span className="spinner" aria-label="Loading" />
         </div>
       }
     >

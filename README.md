@@ -48,12 +48,11 @@ barber-project/
 
 ## 🎨 Brand System & Design Tokens
 
-- **Primary Navy**: `#2A4759`
-- **Accent Coral**: `#F79B72`
-- **Neutral**: `#EEEEEE`
-- **Warm Cream**: `#F7F3EC`
-- **Deep Cinematic**: `#16232B`
-- **Typography**: `Instrument Serif` (Headings & Editorial) + `Manrope` (Body & Interface)
+- **Surfaces**: Paper `#FFFFFF`, Mist `#F5F5F7`, Night `#000000`
+- **Type colour**: Ink `#1D1D1F`, secondary `#6E6E73`
+- **Accent**: Ember `#F79B72` (dark surfaces only)
+- **Typography**: `Inter Tight` (display sizes) + `Inter` (text and interface)
+- Full system, motion rules and copy guidelines: [`design.md`](./design.md)
 
 ---
 

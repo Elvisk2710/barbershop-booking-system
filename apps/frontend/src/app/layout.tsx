@@ -1,27 +1,27 @@
 import type { Metadata, Viewport } from 'next';
-import { Cormorant_Garamond, Archivo } from 'next/font/google';
+import { Inter, Inter_Tight } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { StickyMobileCTA } from '@/components/layout/StickyMobileCTA';
 import { PromoModal } from '@/components/promotions/PromoModal';
 
-const cormorant = Cormorant_Garamond({
+// Two optical cuts of one design: Inter Tight for display sizes, Inter for text.
+const display = Inter_Tight({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-serif',
+  weight: ['500', '600', '700'],
+  variable: '--font-display',
   display: 'swap',
 });
 
-const archivo = Archivo({
+const text = Inter({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-sans',
+  variable: '--font-text',
   display: 'swap',
 });
 
 export const viewport: Viewport = {
-  themeColor: '#16232B',
+  themeColor: '#ffffff',
   width: 'device-width',
   initialScale: 1,
 };
@@ -123,14 +123,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${archivo.variable} scroll-smooth`}>
+    <html lang="en" className={`${display.variable} ${text.variable}`}>
       <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
-      <body className="min-h-screen flex flex-col justify-between font-sans selection:bg-brand-coral selection:text-brand-deep bg-brand-cream text-brand-dark antialiased">
+      <body className="min-h-screen flex flex-col bg-paper text-ink font-sans">
         <Navbar />
         <main className="flex-grow">{children}</main>
         <Footer />

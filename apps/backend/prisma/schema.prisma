@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Service {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String
+  category    String    // HAIRCUTS, BEARD, COMBOS, TREATMENTS
+  price       Float
+  duration    Int       // in minutes
+  featured    Boolean   @default(false)
+  image       String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
+}
+
+model Barber {
+  id              String           @id @default(cuid())
+  name            String
+  slug            String           @unique
+  role            String
+  bio             String
+  specialties     String           // JSON string or comma-separated
+  photo           String
+  actionPhoto     String?
+  experienceYears Int              @default(5)
+  active          Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  schedules       BarberSchedule[]
+  breaks          BarberBreak[]
+  bookings        Booking[]
+}
+
+model BarberSchedule {
+  id        String   @id @default(cuid())
+  barberId  String
+  barber    Barber   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  dayOfWeek Int      // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  startTime String   // "08:00"
+  endTime   String   // "18:00"
+  isActive  Boolean  @default(true)
+
+  @@index([barberId, dayOfWeek])
+}
+
+model BarberBreak {
+  id        String   @id @default(cuid())
+  barberId  String
+  barber    Barber   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  date      String?  // Optional specific date YYYY-MM-DD
+  startTime String   // "13:00"
+  endTime   String   // "14:00"
+  reason    String?
+
+  @@index([barberId, date])
+}
+
+model Booking {
+  id              String   @id @default(cuid())
+  reference       String   @unique // e.g., GRM-8492
+  serviceId       String
+  service         Service  @relation(fields: [serviceId], references: [id])
+  barberId        String
+  barber          Barber   @relation(fields: [barberId], references: [id])
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  specialRequests String?
+  date            String   // YYYY-MM-DD
+  startTime       String   // HH:mm
+  endTime         String   // HH:mm
+  totalPrice      Float
+  promoCode       String?
+  discountAmount  Float    @default(0)
+  status          String   @default("CONFIRMED") // CONFIRMED, CANCELLED, COMPLETED, NO_SHOW
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([date, barberId])
+  @@index([reference])
+  @@index([customerEmail])
+}
+
+model Promo {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  title         String
+  description   String
+  discountType  String   // PERCENTAGE, FIXED, SERVICE_ADDON
+  discountValue Float
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+}

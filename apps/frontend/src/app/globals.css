@@ -1,0 +1,205 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-navy: #2A4759;
+  --color-coral: #F79B72;
+  --color-neutral: #EEEEEE;
+  --color-cream: #F7F3EC;
+  --color-deep: #16232B;
+  --color-dark: #18252C;
+  --color-light: #F8F5EF;
+  --color-border: #D9D6CF;
+  --color-border-dark: rgba(248, 245, 239, 0.12);
+}
+
+body {
+  color: var(--color-dark);
+  background-color: var(--color-cream);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typographic Display Classes — Art Directed for Cormorant Garamond */
+.font-display {
+  font-family: var(--font-serif);
+  font-feature-settings: 'lnum' 1, 'kern' 1;
+}
+
+.text-display-xl {
+  font-family: var(--font-serif);
+  font-size: clamp(3.5rem, 8vw, 7.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+  font-weight: 500;
+}
+
+.text-display-l {
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 5.2vw, 4.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+
+.text-heading-1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2.1rem, 4vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  font-weight: 500;
+}
+
+.text-heading-2 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 2.8vw, 2.5rem);
+  line-height: 1.12;
+  font-weight: 500;
+}
+
+.text-heading-3 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.25rem, 1.8vw, 1.85rem);
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+/* Restrained Architectural Micro-Labels */
+.micro-label {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem; /* 11px */
+  line-height: 1.4;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* Accessible Focus Ring */
+:focus-visible {
+  outline: 2px solid var(--color-coral);
+  outline-offset: 3px;
+}
+
+/* Intentional, Tailored Buttons (6-8px border radius, no soft pills) */
+.btn-primary {
+  @apply relative inline-flex items-center justify-center px-6 py-3.5 rounded-[6px] font-sans font-medium text-xs tracking-wider transition-all duration-300 ease-out overflow-hidden uppercase;
+  background-color: var(--color-coral);
+  color: #16232B;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-navy);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 0;
+}
+
+.btn-primary:hover::before {
+  transform: translateY(0);
+}
+
+.btn-primary > * {
+  position: relative;
+  z-index: 1;
+  transition: color 0.25s ease;
+}
+
+.btn-primary:hover > * {
+  color: var(--color-light);
+}
+
+.btn-secondary {
+  @apply relative inline-flex items-center justify-center px-6 py-3.5 rounded-[6px] font-sans font-medium text-xs tracking-wider transition-all duration-200 ease-out border uppercase;
+  border-color: rgba(42, 71, 89, 0.25);
+  color: var(--color-navy);
+  background-color: transparent;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(42, 71, 89, 0.05);
+  border-color: var(--color-navy);
+}
+
+.btn-secondary-dark {
+  @apply relative inline-flex items-center justify-center px-6 py-3.5 rounded-[6px] font-sans font-medium text-xs tracking-wider transition-all duration-200 ease-out border uppercase;
+  border-color: rgba(248, 245, 239, 0.22);
+  color: var(--color-light);
+  background-color: transparent;
+}
+
+.btn-secondary-dark:hover {
+  background-color: rgba(248, 245, 239, 0.06);
+  border-color: var(--color-coral);
+  color: var(--color-coral);
+}
+
+/* Editorial Underline Links with Directional Arrow Movement */
+.link-editorial {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-sans);
+  transition: color 0.25s ease;
+}
+
+.link-editorial::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background-color: var(--color-coral);
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.link-editorial:hover::after {
+  width: 100%;
+}
+
+/* Glass Navigation Bar — Restrained */
+.glass-nav {
+  background: rgba(22, 35, 43, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(248, 245, 239, 0.08);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #16232B;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A4759;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F79B72;
+}
+
+/* Accessibility: Respect Prefers Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

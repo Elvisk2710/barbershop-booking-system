@@ -1,197 +1,159 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Scissors, Menu, X, Calendar, MapPin, Clock } from 'lucide-react';
-import { BRAND } from '@barber/shared';
+import { AnimatePresence, motion } from 'framer-motion';
+
+const NAV_LINKS = [
+  { href: '/services', label: 'Menu' },
+  { href: '/gentlemen', label: 'Barbers' },
+  { href: '/about', label: 'Story' },
+  { href: '/visit', label: 'Visit' },
+  { href: '/manage', label: 'Your booking' },
+];
+
+export function Wordmark({ className = '' }: { className?: string }) {
+  return (
+    <span className={`font-display font-semibold tracking-[-0.03em] leading-none ${className}`}>
+      Gentleman’s
+    </span>
+  );
+}
 
 export function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 24);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    document.body.style.overflow = open ? 'hidden' : '';
     return () => {
       document.body.style.overflow = '';
     };
-  }, [mobileMenuOpen]);
+  }, [open]);
 
   useEffect(() => {
-    setMobileMenuOpen(false);
+    setOpen(false);
   }, [pathname]);
 
-  const navLinks = [
-    { href: '/services', label: 'Grooming Menu' },
-    { href: '/gentlemen', label: 'The Craftsmen' },
-    { href: '/about', label: 'Our Story' },
-    { href: '/visit', label: 'Harare Studio' },
-    { href: '/manage', label: 'Manage Booking' },
-  ];
-
-  const isHome = pathname === '/';
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
 
   return (
-    <>
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled || !isHome
-            ? 'glass-nav py-3.5 text-brand-light'
-            : 'bg-gradient-to-b from-brand-deep/95 via-brand-deep/70 to-transparent py-4 sm:py-5 text-brand-light'
-        }`}
+    <header className="fixed inset-x-0 top-0 z-50">
+      <div
+        className={`relative z-10 transition-[background-color,box-shadow] duration-500 ease-out ${
+          open ? 'bg-paper' : 'material'
+        } ${scrolled && !open ? 'shadow-[0_1px_0_rgba(0,0,0,0.08)]' : ''}`}
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
-          {/* Brand Identity */}
-          <Link href="/" className="flex items-center space-x-3 group flex-shrink-0" aria-label="Gentleman's Grooming Bar Home">
-            <div className="w-8 h-8 rounded-[4px] bg-brand-coral/15 border border-brand-coral/30 flex items-center justify-center text-brand-coral transition-colors group-hover:border-brand-coral/60 flex-shrink-0">
-              <Scissors className="w-3.5 h-3.5 -rotate-45" />
-            </div>
-            <div className="leading-tight">
-              <span className="font-display text-lg sm:text-xl tracking-wider block font-medium leading-none text-brand-light whitespace-nowrap">
-                GENTLEMAN’S
-              </span>
-              <span className="text-[9px] uppercase tracking-[0.22em] text-brand-coral font-sans font-medium block mt-0.5 whitespace-nowrap">
-                Grooming Bar · Harare
-              </span>
-            </div>
+        <nav
+          className="shell-wide flex h-[var(--nav-h)] items-center justify-between"
+          aria-label="Main"
+        >
+          <Link href="/" aria-label="Gentleman’s Grooming Bar, home" className="text-ink">
+            <Wordmark className="text-[1.25rem]" />
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8 text-xs uppercase tracking-widest font-sans font-medium">
-            {navLinks.map(link => {
-              const isActive = pathname === link.href;
+          <ul className="hidden md:flex items-center gap-8">
+            {NAV_LINKS.map(link => {
+              const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
               return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`transition-colors duration-200 relative py-1 ${
-                    isActive
-                      ? 'text-brand-coral font-semibold'
-                      : 'text-brand-light/75 hover:text-brand-coral'
-                  }`}
-                >
-                  {link.label}
-                  {isActive && (
-                    <span className="absolute bottom-0 left-0 w-full h-[1.5px] bg-brand-coral" />
-                  )}
-                </Link>
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={`t-fine transition-colors duration-200 ${
+                      active ? 'text-ink' : 'text-ink/70 hover:text-ink'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
               );
             })}
-          </nav>
+          </ul>
 
-          {/* Actions & Mobile Toggle */}
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/book"
-              id="nav-book-button"
-              className="hidden sm:inline-flex btn-primary text-xs uppercase tracking-wider font-semibold px-5 py-2.5 items-center space-x-2 whitespace-nowrap"
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              <span>Reserve Chair</span>
-            </Link>
-
+          <div className="flex items-center gap-2">
+            {!pathname.startsWith('/book') && (
+              <Link href="/book" id="nav-book-button" className="btn btn-ink btn-sm">
+                Book
+              </Link>
+            )}
             <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-brand-light hover:text-brand-coral transition-colors rounded-[4px] flex items-center justify-center"
-              aria-label="Open navigation menu"
+              type="button"
               id="mobile-menu-toggle"
+              onClick={() => setOpen(v => !v)}
+              aria-expanded={open}
+              aria-controls="mobile-menu"
+              aria-label={open ? 'Close menu' : 'Open menu'}
+              className="md:hidden relative -mr-2 h-11 w-11 grid place-items-center"
             >
-              <Menu className="w-6 h-6 text-brand-light" />
+              <span
+                className={`absolute h-[1.5px] w-[18px] rounded-full bg-ink transition-transform duration-500 ease-out ${
+                  open ? 'rotate-45' : '-translate-y-[4px]'
+                }`}
+              />
+              <span
+                className={`absolute h-[1.5px] w-[18px] rounded-full bg-ink transition-transform duration-500 ease-out ${
+                  open ? '-rotate-45' : 'translate-y-[4px]'
+                }`}
+              />
             </button>
           </div>
-        </div>
-      </header>
+        </nav>
+      </div>
 
-      {/* Full-Screen Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div
-          className="lg:hidden fixed inset-0 z-[60] bg-brand-deep text-brand-light flex flex-col justify-between p-6 sm:p-8 animate-fade-in overflow-y-auto"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div className="flex items-center justify-between border-b border-brand-light/10 pb-5">
-            <Link
-              href="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center space-x-3"
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            id="mobile-menu"
+            key="mobile-menu"
+            className="md:hidden fixed inset-0 top-0 bg-paper pt-[var(--nav-h)]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.2 } }}
+            transition={{ duration: 0.3 }}
+          >
+            <motion.ul
+              className="shell pt-6 space-y-1"
+              initial="hidden"
+              animate="show"
+              variants={{ show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } } }}
             >
-              <div className="w-8 h-8 rounded-[4px] bg-brand-coral/15 border border-brand-coral/30 flex items-center justify-center text-brand-coral">
-                <Scissors className="w-3.5 h-3.5 -rotate-45" />
-              </div>
-              <div className="leading-tight">
-                <span className="font-display text-lg tracking-wider block font-medium leading-none text-brand-light">
-                  GENTLEMAN’S
-                </span>
-                <span className="text-[9px] uppercase tracking-[0.22em] text-brand-coral font-sans font-medium block mt-0.5">
-                  Harare Studio
-                </span>
-              </div>
-            </Link>
-
-            <button
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-2 text-brand-light/70 hover:text-brand-coral transition-colors rounded-[4px]"
-              aria-label="Close navigation menu"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-
-          <nav className="flex flex-col space-y-6 py-8">
-            {navLinks.map(link => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
+              {NAV_LINKS.map(link => (
+                <motion.li
                   key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`font-display text-3xl transition-colors text-left flex items-center justify-between ${
-                    isActive ? 'text-brand-coral font-medium' : 'text-brand-light/85 hover:text-brand-coral'
-                  }`}
+                  variants={{
+                    hidden: { opacity: 0, y: -8 },
+                    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+                  }}
                 >
-                  <span>{link.label}</span>
-                  {isActive && <span className="text-xs font-sans text-brand-coral tracking-widest">●</span>}
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="space-y-6 pt-6 border-t border-brand-light/10">
-            <Link
-              href="/book"
-              onClick={() => setMobileMenuOpen(false)}
-              className="btn-primary w-full py-4 text-center font-semibold uppercase tracking-wider text-xs flex items-center justify-center space-x-2"
-            >
-              <Calendar className="w-4 h-4" />
-              <span>Reserve Your Chair</span>
-            </Link>
-
-            <div className="space-y-2 text-xs text-brand-light/60 font-light">
-              <div className="flex items-center space-x-2">
-                <MapPin className="w-3.5 h-3.5 text-brand-coral flex-shrink-0" />
-                <span>{BRAND.location.address}, {BRAND.location.city}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Clock className="w-3.5 h-3.5 text-brand-coral flex-shrink-0" />
-                <span>Mon–Sat 08:00 – 18:00 · Avondale</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+                  <Link
+                    href={link.href}
+                    className={`block py-2 t-headline ${
+                      pathname === link.href ? 'text-ink' : 'text-ink/80'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
   );
 }

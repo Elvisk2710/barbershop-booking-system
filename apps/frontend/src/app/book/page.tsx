@@ -21,8 +21,8 @@ export default function BookPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-brand-cream flex items-center justify-center pt-24 font-sans">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-brand-coral border-t-transparent" />
+        <div className="min-h-[80vh] grid place-items-center text-ink-3">
+          <span className="spinner" aria-label="Loading" />
         </div>
       }
     >

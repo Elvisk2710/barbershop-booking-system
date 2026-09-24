@@ -9,34 +9,33 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        brand: {
-          navy: '#2A4759',
-          coral: '#F79B72',
-          neutral: '#EEEEEE',
-          cream: '#F7F3EC',
-          deep: '#16232B',
-          dark: '#18252C',
-          light: '#F8F5EF',
-        }
+        paper: '#ffffff',
+        mist: '#f5f5f7',
+        ink: {
+          DEFAULT: '#1d1d1f',
+          2: '#6e6e73',
+          3: '#86868b',
+        },
+        hairline: '#d2d2d7',
+        night: {
+          DEFAULT: '#000000',
+          2: '#161617',
+          3: '#2c2c2e',
+        },
+        navy: '#2a4759',
+        ember: {
+          DEFAULT: '#f79b72',
+          ink: '#b4532a',
+        },
       },
       fontFamily: {
-        serif: ['var(--font-serif)', 'serif'],
-        sans: ['var(--font-sans)', 'sans-serif'],
+        display: ['var(--font-display)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-text)', 'system-ui', 'sans-serif'],
       },
-      animation: {
-        'fade-in': 'fadeIn 0.5s ease-out forwards',
-        'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+      transitionTimingFunction: {
+        out: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        spring: 'cubic-bezier(0.34, 1.36, 0.64, 1)',
       },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        }
-      }
     },
   },
   plugins: [],
